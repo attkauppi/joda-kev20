@@ -1,3 +1,3 @@
 # joda-kev20
 
-Ohjeet täydentyvät pikku hiljaa
+Ohjeet täydentyvät pikku hiljaa. Toivottavasti

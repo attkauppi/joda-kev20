@@ -3,6 +3,7 @@ import tweepy
 import sys
 import os
 import time
+import dataset
 
 # Based on: https://www.storybench.org/how-to-collect-tweets-from-the-twitter-streaming-api-using-python/
 
@@ -18,10 +19,16 @@ class StreamListener(tweepy.StreamListener):
 
         # Handling retweets
         ## If retweeted_status attribute exists, flag tweet as a retweet
+        text = ""
         is_retweet = False
         if hasattr(status, "retweeted_status"):
             is_retweet = True
+            #if hasattr(status.retweeted_status, "extended_tweet"):
+            #    text = status.retweeted_status.extended_tweet["full_text"]
+            #else:
+            #    text = status.retweeted_status.text
 
+        #text = ""
         # Check if text is truncated
         if hasattr(status,"extended_tweet"):
             text = status.extended_tweet["full_text"]
@@ -29,6 +36,7 @@ class StreamListener(tweepy.StreamListener):
             text = status.text
       
         # Check if this is a quote tweet
+        is_quote = False
         is_quote = hasattr(status, "quoted_status")
         quoted_text = ""
         if is_quote:
@@ -44,6 +52,73 @@ class StreamListener(tweepy.StreamListener):
             text.replace(c, " ")
             quoted_text.replace(c, " ")
 
+
+        lang = ""
+        lang = status.lang
+        print("LANG: ", lang)
+	# Recording in an sqlite3 database
+        db = dataset.connect("sqlite:///tweets2.db")
+        table = db["tweets"]
+        print(text)
+        table.insert(dict(
+            created_at = status.created_at,
+            tweet_id = status.id_str,
+            user_id = status.user.id_str,
+            screen_name = status.user.screen_name,
+            is_retweet = is_retweet,
+            is_quote = is_quote,
+            text = text,
+            quoted_text = quoted_text,
+            lang = lang,))
+
+        hashtag_list = []
+        if hasattr(status, "entities"):
+            entities = status.entities
+            if "hashtags" in entities:
+                for hashtag in entities["hashtags"]:
+                    if "text" in hashtag and hashtag is not None:
+                        #if hashtag is not None and "text" in hashtag:
+                        hashtag = hashtag["text"]
+                        hashtag_list.append(hashtag)
+                    #if "text" in hashtag:
+                    #    hashtag = hashtag["text"]
+                    #    if hashtag is not None:
+                    #    hashtag_list.append(hashtag)
+#status.entities.hashtags
+        table_hashtags = db["hashtags"]
+
+        print("Tulostaa viestin hashtagit: ")
+        for i in hashtag_list:
+            print(i.lower())
+
+        for i in hashtag_list:
+            i = i.lower()
+            print("tagi i: ", i)
+            tagi = table_hashtags.find_one(hashtag=i)
+            print("onko tietokannassa? ", tagi)
+            if tagi is None:
+                table_hashtags.insert(dict(hashtag=i,esiintynyt=1,))
+            else:
+                tagi = table_hashtags.find_one(hashtag=i)
+                print("tagin nimi: ", tagi["hashtag"])
+                print("Tagin esiintymiskerrat ennen viimeisinta: ", tagi['esiintynyt'])
+                esiintymiskerrat = tagi['esiintynyt']
+                esiintymiskerrat = esiintymiskerrat + 1
+                table_hashtags.update(dict(hashtag=tagi["hashtag"], esiintynyt=esiintymiskerrat), ["hashtag"])
+            tagi = table_hashtags.find_one(hashtag=i)
+            print("tagi_id: ", tagi['id'])
+            tagi_id = tagi['id']
+            tweet_tags_table = db['tweet_tags']
+            tweet_tags_table.insert(dict(
+                tweet_id =status.id_str,
+                tag_id = tagi_id,))
+
+            print(i)
+        print("----")
+
+        #table_hashtags = db["hashtags"]
+
+        #table_hashtags.insert
         # Recording tweet information in out.csv
         #with open(self.output_filename, "a", encoding='utf-8') as f:
         with open("out.csv", "a", encoding='utf-8') as f:

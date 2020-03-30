@@ -40,3 +40,9 @@ CREATE TABLE tweet_tags (
 	PRIMARY KEY (id)
 );
 ```
+
+# Setting up
+
+We're not here to break things - hopefully!. Therefore, let's set up a virtual environment that doesnt' interfere with your system's python.
+
+First of all, we're using python 3.7 here, so if you have an earlier version, you're going to want to update it. These are very good [instructions](https://copdips.com/2019/10/installing-python3-on-ubuntu.html) for accomplishing that, although you'll have to modify them a bit to suit your needs.

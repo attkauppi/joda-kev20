@@ -47,7 +47,7 @@ We're not here to break things - hopefully!. Therefore, let's set up a virtual e
 
 First of all, we're using python 3.7 here, so if you have an earlier version, you're going to want to update it. These are very good [instructions](https://copdips.com/2019/10/installing-python3-on-ubuntu.html) for accomplishing that, although you'll have to modify them a bit to suit your needs.
 
-Now we're going to set up a virtual environment for our project. To do this, run the following command, assuming you followed the aforementioned instructions for setting up python 3.7:
+Now we're going to set up a [virtual environment](https://zainrizvi.io/blog/jupyter-notebooks-best-practices-use-virtual-environments/) for our project.To do this, run the following command, assuming you followed the aforementioned instructions for setting up python 3.7:
 
 ```
 python3.7 -m venv .venv --system-site-packages

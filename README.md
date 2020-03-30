@@ -46,3 +46,37 @@ CREATE TABLE tweet_tags (
 We're not here to break things - hopefully!. Therefore, let's set up a virtual environment that doesnt' interfere with your system's python.
 
 First of all, we're using python 3.7 here, so if you have an earlier version, you're going to want to update it. These are very good [instructions](https://copdips.com/2019/10/installing-python3-on-ubuntu.html) for accomplishing that, although you'll have to modify them a bit to suit your needs.
+
+Now we're going to set up a virtual environment for our project. To do this, run the following command, assuming you followed the aforementioned instructions for setting up python 3.7:
+
+```
+python3.7 -m venv .venv --system-site-packages
+```
+
+The purpose of this command is also to ensure that all python packages that are installed by default are accessible in the virtual environment. For example, jupyter lab will remain accessible to us, if it's already installed on your system, by using this flag.
+
+Then to activate our environment:
+
+```
+source .venv/bin/activate
+```
+
+Next, we want to register our environemtn with jupyterlab, so we can choose to use it, when we launch jupyter lab.
+
+```
+python -m ipykernel install --user --name=.venv
+```
+
+Now an ipykernel should be installed under .venv. You can try it out by running
+
+```
+jupyter lab
+```
+
+
+
+Now we can install the packages required for our project and everything should work out fine! Yay!
+
+```
+pip install -r requirements.txt
+```

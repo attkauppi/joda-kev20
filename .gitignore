@@ -1,3 +1,6 @@
 out.csv
 auth.conf
 venv/
+.venvJoda/
+.vscode/
+.ipynb_checkpoints/

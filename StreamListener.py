@@ -20,20 +20,27 @@ class StreamListener(tweepy.StreamListener):
         # Handling retweets
         ## If retweeted_status attribute exists, flag tweet as a retweet
         text = ""
+        #is_retweet = hasattr(status, "retweeted_status")
         is_retweet = False
         if hasattr(status, "retweeted_status"):
             is_retweet = True
+            try:
+                text = status.retweeted_status.extended_tweet["full_text"]
+            except:
+                text = 'None'
             #if hasattr(status.retweeted_status, "extended_tweet"):
-            #    text = status.retweeted_status.extended_tweet["full_text"]
+                #text = status.retweeted_status.extended_tweet["full_text"]
+
             #else:
             #    text = status.retweeted_status.text
 
         #text = ""
         # Check if text is truncated
-        if hasattr(status,"extended_tweet"):
-            text = status.extended_tweet["full_text"]
-        else:
-            text = status.text
+        if not is_retweet:
+            if hasattr(status,"extended_tweet"):
+                text = status.extended_tweet["full_text"]
+            else:
+                text = status.text
       
         # Check if this is a quote tweet
         is_quote = False
@@ -41,6 +48,10 @@ class StreamListener(tweepy.StreamListener):
         quoted_text = ""
         if is_quote:
             # Check if quoted tweet's text has been truncated before rcording
+            #try:
+            #    quoted_text = status.quoted_status.full_text
+            #except:
+            #    quoted_text = status.quoted_status.text
             if hasattr(status.quoted_status,"extended_tweet"):
                 quoted_text = status.quoted_status.extended_tweet["full_text"]
             else:
@@ -76,14 +87,14 @@ class StreamListener(tweepy.StreamListener):
             entities = status.entities
             if "hashtags" in entities:
                 for hashtag in entities["hashtags"]:
-                    if "text" in hashtag and hashtag is not None:
+                    #if "text" in hashtag and hashtag is not None:
                         #if hashtag is not None and "text" in hashtag:
-                        hashtag = hashtag["text"]
-                        hashtag_list.append(hashtag)
-                    #if "text" in hashtag:
                     #    hashtag = hashtag["text"]
-                    #    if hashtag is not None:
                     #    hashtag_list.append(hashtag)
+                    if "text" in hashtag:
+                        hashtag = hashtag["text"]
+                        if hashtag is not None:
+                            hashtag_list.append(hashtag)
 #status.entities.hashtags
         table_hashtags = db["hashtags"]
 

@@ -4,3 +4,6 @@ venv/
 .venvJoda/
 .vscode/
 .ipynb_checkpoints/
+.venv372/
+.venvEnv/
+.ipynb_checkpoints/

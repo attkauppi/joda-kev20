@@ -6,4 +6,6 @@ venv/
 .ipynb_checkpoints/
 .venv372/
 .venvEnv/
+.venvEnv372
 .ipynb_checkpoints/
+auth.conf

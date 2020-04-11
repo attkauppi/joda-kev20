@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
-import scrapy
 import json
+import collections
+import re
+import numpy as np
 import logging
+import sys
+import scrapy
+from scrapy_splash import SplashRequest
+from scrapy.exceptions import CloseSpider
 
 
 class AirbnbSpiderSpider(scrapy.Spider):
@@ -17,6 +23,12 @@ class AirbnbSpiderSpider(scrapy.Spider):
     
     
     def parse(self, response):
+
+        has_next_page = True
+
+
+
+
         last_page_number = self.last_page_in_search(response)
         print("***********************************")
         print("Seuraavassa sivunumero: ")

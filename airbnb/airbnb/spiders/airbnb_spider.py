@@ -6,6 +6,7 @@ import numpy as np
 import logging
 import sys
 import scrapy
+#from scrapy import JsonRequest
 from scrapy_splash import SplashRequest
 from scrapy.exceptions import CloseSpider
 
@@ -15,6 +16,8 @@ import scrapy
 
 from datetime import date, timedelta
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
+
+from airbnb.items import AirbnbItem
 
 #from deepbnb.items import DeepbnbItem
 
@@ -46,14 +49,21 @@ class AirbnbSpiderSpider(scrapy.Spider):
     name = 'airbnb_spider'
     allowed_domains = ['www.airbnb.com']
     start_urls = ['https://www.airbnb.com/']
-    url = ['https://www.airbnb.com/s/Helsinki/homes?tab_id=all_tab&refinement_paths%5B%5D=%2Fhomes&query=Helsinki&place_id=ChIJkQYhlscLkkYRY_fiO4S9Ts0&checkin=2020-04-14&checkout=2020-04-15&adults=1&source=structured_search_input_header&search_type=search_query']
+    #url = ['https://www.airbnb.com/s/Helsinki/homes?tab_id=all_tab&refinement_paths%5B%5D=%2Fhomes&query=Helsinki&place_id=ChIJkQYhlscLkkYRY_fiO4S9Ts0&checkin=2020-04-14&checkout=2020-04-15&adults=1&source=structured_search_input_header&search_type=search_query']
+    url =['https://www.airbnb.com/api/v2/explore_tabs?_format=for_explore_search_web&_intents=p1&auto_ib=false&client_session_id=6c7f3e7b-c038-4d92-b2b0-0bc7c25f1054%C2%A4cy=EUR&experiences_per_grid=20&fetch_filters=true&guidebooks_per_grid=20&has_zero_guest_treatment=true&is_guided_search=true&is_new_cards_experiment=true&is_standard_search=true&items_per_grid=18&key=d306zoyjsyarp7ifhu67rjxn52tv0t20&locale=en-CA&luxury_pre_launch=false&metadata_only=false&place_id=ChIJ21P2rgUrTI8Ris1fYjy3Ms4&query=Helsinki%2C%20Finland&query_understanding_enabled=true&refinement_paths%5B%5D=%2Fhomes&s_tag=b7cT9Z3U&satori_version=1.1.9&screen_height=948&screen_size=medium&screen_width=1105&search_type=section_navigation&selected_tab_id=home_tab&show_groupings=true&supports_for_you_v3=true&timezone_offset=-240&version=1.5.7&checkin=2020-04-14&checkout=2020-04-15&adults=1']
     default_currency = 'EUR'
 
+    offset_str = '&items_offset='
     listing_url_beginning = 'https://www.airbnb.com/api/v2/pdp_listing_details/'
 
     listing_url_end = '?_format=for_rooms_show&key=d306zoyjsyarp7ifhu67rjxn52tv0t20'
-    listing_url_checkin_checkout = '&checkin=2020-04-12&checkout=2020-04-12'
+    listing_url_checkin_checkout = '&checkin=2020-04-14&checkout=2020-04-15'
     guests = '&adults=1'
+
+    custom_settings = {
+        'FEED_FORMAT': 'csv',
+        'FEED_URI': 'test.csv'
+    }
     
     #default_max_price = 2000
     #default_min_price = 100
@@ -96,21 +106,17 @@ class AirbnbSpiderSpider(scrapy.Spider):
 
 
     def start_requests(self):
-        url = ('https://www.airbnb.com/api/v2/explore_tabs?_format=for_explore_search_web&_intents=p1&auto_ib=false&client_session_id=6c7f3e7b-c038-4d92-b2b0-0bc7c25f1054%C2%A4cy=CAD&experiences_per_grid=20&fetch_filters=true&guidebooks_per_grid=20&has_zero_guest_treatment=true&is_guided_search=true&is_new_cards_experiment=true&is_standard_search=true&items_per_grid=18&key=d306zoyjsyarp7ifhu67rjxn52tv0t20&locale=en-CA&luxury_pre_launch=false&metadata_only=false&place_id=ChIJ21P2rgUrTI8Ris1fYjy3Ms4&query=Helsinki%2C%20Finland&query_understanding_enabled=true&refinement_paths%5B%5D=%2Fhomes&s_tag=b7cT9Z3U&satori_version=1.1.9&screen_height=948&screen_size=medium&screen_width=1105&search_type=section_navigation&selected_tab_id=home_tab&show_groupings=true&supports_for_you_v3=true&timezone_offset=-240&version=1.5.7')
+        url = ('https://www.airbnb.com/api/v2/explore_tabs?_format=for_explore_search_web&_intents=p1&auto_ib=false&client_session_id=6c7f3e7b-c038-4d92-b2b0-0bc7c25f1054%C2%A4cy=EUR&experiences_per_grid=20&fetch_filters=true&guidebooks_per_grid=20&has_zero_guest_treatment=true&is_guided_search=true&is_new_cards_experiment=true&is_standard_search=true&items_per_grid=18&key=d306zoyjsyarp7ifhu67rjxn52tv0t20&locale=en-CA&luxury_pre_launch=false&metadata_only=false&place_id=ChIJ21P2rgUrTI8Ris1fYjy3Ms4&query=Helsinki%2C%20Finland&query_understanding_enabled=true&refinement_paths%5B%5D=%2Fhomes&s_tag=b7cT9Z3U&satori_version=1.1.9&screen_height=948&screen_size=medium&screen_width=1105&search_type=section_navigation&selected_tab_id=home_tab&show_groupings=true&supports_for_you_v3=true&timezone_offset=-240&version=1.5.7')
         #url = ('https://www.airbnb.ca/api/v2/explore_tabs?_format=for_explore_search_web&_intents=p1&auto_ib=false&client_session_id=6c7f3e7b-c038-4d92-b2b0-0bc7c25f1054%C2%A4cy=CAD&experiences_per_grid=20&fetch_filters=true&guidebooks_per_grid=20&has_zero_guest_treatment=true&is_guided_search=true&is_new_cards_experiment=true&is_standard_search=true&items_per_grid=18&key=d306zoyjsyarp7ifhu67rjxn52tv0t20&locale=en-CA&luxury_pre_launch=false&metadata_only=false&place_id=ChIJ21P2rgUrTI8Ris1fYjy3Ms4&query=Helsinki%2C%20Finland&query_understanding_enabled=true&refinement_paths%5B%5D=%2Fhomes&s_tag=b7cT9Z3U&satori_version=1.1.9&screen_height=948&screen_size=medium&screen_width=1105&search_type=section_navigation&selected_tab_id=home_tab&show_groupings=true&supports_for_you_v3=true&timezone_offset=-240&version=1.5.7')
         #url = ['https://www.airbnb.com/s/Helsinki/homes?tab_id=all_tab&refinement_paths%5B%5D=%2Fhomes&query=Helsinki&place_id=ChIJkQYhlscLkkYRY_fiO4S9Ts0&checkin=2020-04-14&checkout=2020-04-15&adults=1&source=structured_search_input_header&search_type=search_query']
         #url = ('https://www.airbnb.com/s/Helsinki/homes?tab_id=all_tab&refinement_paths%5B%5D=%2Fhomes&query=Helsinki&place_id=ChIJkQYhlscLkkYRY_fiO4S9Ts0&checkin=2020-04-12&checkout=2020-04-13&adults=1&source=structured_search_input_header&search_type=search_query')
         #url = ('https://www.airbnb.com/s/helsinki/homes?tab_id=all_tab&refinement_paths%5B%5D=%2Fhomes&source=structured_search_input_header&search_type=search_query')
+        #first = False
         yield scrapy.Request(url=url, callback=self.parse)
 
-    
-
-       
-
-    
-    
     def parse(self, response):
         data = json.loads(response.body)
+        #data = json.loads(response.text)
         tab = data['explore_tabs'][0]
 
         ## Handling pagination
@@ -118,11 +124,15 @@ class AirbnbSpiderSpider(scrapy.Spider):
         pagination = tab['pagination_metadata']
         has_next_page = self.has_next_page(data)
         print("************* NEXT PAGE: ", has_next_page)
+        offset = data.get('explore_tabs')[0]['pagination_metadata']['items_offset']
 
-        gen_listings = data.get('explore_tabs')[0].get('sections')[2]
-
-
-        listings = data.get('explore_tabs')[0].get('sections')[2].get('listings')
+        #gen_listings = data.get('explore_tabs')[0].get('sections')[2]
+        listings = None
+        if offset > 18:
+            # When on first page, offset is 18. After this, the listings are in another section.
+            listings = data.get('explore_tabs')[0].get('sections')[0].get('listings')
+        else:
+            listings = data.get('explore_tabs')[0].get('sections')[2].get('listings')
 
         j = 0
         for i in listings:
@@ -131,108 +141,180 @@ class AirbnbSpiderSpider(scrapy.Spider):
             pricing_quote = listings[j].get('pricing_quote')
             # Information about the host, like whether they're verified
             verified = listings[j].get('verified')
+            id = i.get('id')
+            listing_url = self.get_listing_url(id)
+            #yield scrapy.JsonRequest(url=listing_url, callback=self.parse_listing_contents)
+
+
+
             #pricing_quote = self.get_pricing_quote(gen_listings, j)
-            self.parse_listing(i, pricing_quote, verified)
+            #yield scrapy.Request(i, pricing_quote, verified, callback=self.parse_listing)
+            item = AirbnbItem()
+
+            item['id'] = i.get('id')
+            item['name'] = i.get('name')
+            item['is_business_travel_ready'] = i.get('is_business_travel_ready')
+            item['is_new_listing'] = i.get('is_new_listing')
+            item['is_super_host'] = i.get('is_superhost')
+
+            item['kicker_content_message'] = i.get('kicker_content').get('messages')[0]
+
+
+            item['latitude'] = i.get('lat')
+            item['longitude'] = i.get('lng')
+            item['localized_city'] = i.get('localized_city')
+            item['localized_neighborhood'] = i.get('localized_neighborhood')
+            item['neighborhood'] = i.get('neighborhood')
+
+            item['person_capacity'] = i.get('person_capacity')
+            item['picture_count'] = i.get('picture_count')
+            item['preview_amenities'] = i.get('preview_amenities')
+            item['property_type_id'] = i.get('property_type_id')
+            item['reviews_count'] = i.get('reviews_count')
+            item['room_and_property_type'] = i.get('room_and_property_type')
+            item['room_type_category'] = i.get('room_type_category')
+            item['room_type'] = i.get('room_type')
+            item['space_type'] = i.get('space_type')
+            item['star_rating'] = i.get('star_rating')
+            item['avg_rating'] = i.get('avg_rating')
+            item['min_nights'] = i.get('min_nights')
+            item['max_nights'] = i.get('max_nights')
+            item['cancel_policy'] = i.get('cancel_policy')
+
+            # Pricing quote -osuuden hakeminen
+            item['can_instant_book'] = pricing_quote.get('can_instant_book')
+            item['monthly_price_factor'] = pricing_quote.get('monthly_price_factor')
+            item['price_string'] = pricing_quote.get('price_string')
+            item['rate_type'] = pricing_quote.get('rate_type')
+            item['weekly_price_factor'] = pricing_quote.get('weekly_price_factor')
+            #can_instant_book = listing.get('pricing_quote').get('can_instant_book')
+
+
+            item['host_verified'] = verified.get('enabled')
+            #self.parse_listing_contents(id)
+            item['bedrooms'] = i.get('bedrooms')
+            item['bedroom_label'] = i.get('bedroom_label')
+            item['beds'] = i.get('beds')
+            item['bathrooms'] = i.get('bathrooms')
+            item['city'] = i.get('city')
+
+            #item = 
+
+
+            item['listing_url'] = self.get_listing_url(id)
+
+            yield item
+
+
+            #self.parse_listing(i, pricing_quote, verified)
+            #yield item
+            #self.parse_listing(i, pricing_quote, verified)
             j = j +1
 
-        bathrooms2 = listings[0].get('listing').get('bathrooms')
-        print("**********BATHROOMS2: ", bathrooms2)
+        if has_next_page:
+            url = self.url[0]+self.offset_str+str(offset)
+            print()
+            print("***************URL: ", url)
+            yield scrapy.Request(url=url, callback=self.parse)
 
-        print("************************LENLISTINGS: ", len(listings))
-        print(len(listings))
+        # bathrooms2 = listings[0].get('listing').get('bathrooms')
+        # print("**********BATHROOMS2: ", bathrooms2)
 
-        
-
-        bathrooms1 = data.get('explore_tabs')[0].get('sections')[2].get('listings')[0].get('listing').get('bathrooms')
-        print("***********bathrooms1")
-        print(bathrooms1)
-        #listing = listings.extract()
-        #print(listing)
-        print("***************LISTINGS")
-        #print(listings.text)
-        #view(listings)
-
-
-
-        # Next page?
-        # if pagination['has_next_page']:
-        #     items_offset = pagination['items_offset']
-        #     print("items offset: ", items_offset)
-        #     #AirbnbSpiderSpider._add_search_params(next_section, response)
-        #     next_section.update({'items_offset': items_offset})
-
-        #     # Jäi kusemaan tästä
-        #     yield self._api_request(params = next_section, response=response)
-        
-
+        # print("************************LENLISTINGS: ", len(listings))
+        # print(len(listings))
 
         
 
-        # Next page
-
-
-        #offset = data.get('explore_tabs')[0]['pagination_metadata']['items_offset']
-        #print("*********** OFFFSET: ", offset)
-        #has_next_page = data.get('explore_tabs')[0]['pagination_metadata']['has_next_page']
-        
-
-        listings = self.get_listings(data)
-        print('__________-------------_______________________')
-        #print(listings)
-        print('__________-------------_______________________')
-
-        #listings = data.get('explore_tabs')[0].get('sections')[1].get('listings')
-        #logging.log(logging.DEBUG, '"******LISTINGS***"' + listings)
-
-        BASE_URL = 'https://www.airbnb.com/rooms/'
+        # bathrooms1 = data.get('explore_tabs')[0].get('sections')[2].get('listings')[0].get('listing').get('bathrooms')
+        # print("***********bathrooms1")
+        # print(bathrooms1)
+        # #listing = listings.extract()
+        # #print(listing)
+        # print("***************LISTINGS")
+        # #print(listings.text)
+        # #view(listings)
 
 
 
+        # # Next page?
+        # # if pagination['has_next_page']:
+        # #     items_offset = pagination['items_offset']
+        # #     print("items offset: ", items_offset)
+        # #     #AirbnbSpiderSpider._add_search_params(next_section, response)
+        # #     next_section.update({'items_offset': items_offset})
 
-        # last_page_number = self.last_pagenumer_in_search(response)
-        # print("-----------------------")
-        # print("last_page_number: ", last_page_number)
-        # print("-----------------------")
-        has_next_page = True
-
+        # #     # Jäi kusemaan tästä
+        # #     yield self._api_request(params = next_section, response=response)
         
 
 
-        #### OFFSETIN HAKEMINEN ONNISTUU NÄIN
-        # Vinkki tähän saatu täältä: https://gist.github.com/prehensile/aed87c98677da07c8f042cd019a04ebf0
-        offset = data.get('explore_tabs')[0]['pagination_metadata']['items_offset']
-        print("******OFFSET***")
-        print(offset)
+        
 
-        # Ei osaa vielä hakea Listingssejä
-        # https://gist.github.com/prehensile/aed87c98677da07c8f042cd01904ebf0/380524e7cb9f7f9e91548b8cbf2b1b3cf77c7f50#file-airbnb-search-py-L28
-        #page_data = get_bootstrap_data_for_hypernova_key( buf, "spaspabundlejs" )
-        #section = page_data["bootstrapData"]["reduxData"]["exploreTab"]["response"]["explore_tabs"][0]["sections"][0]
-        #listings = section["listings"]
-        #items_offset = page_data["bootstrapData"]["reduxData"]["exploreTab"]["response"]["explore_tabs"][0]["pagination_metadata"]["items_offset"]
-
-        homes_sections = data.get('explore_tabs')[0]['sections'][0]
+        # # Next page
 
 
-        #### LISTINGSEIHIN PÄÄSEE KÄSIKSI NÄIN:
-        #homes = data.get('explore_tabs')[0].get('sections')[2].get('listings')
+        # #offset = data.get('explore_tabs')[0]['pagination_metadata']['items_offset']
+        # #print("*********** OFFFSET: ", offset)
+        # #has_next_page = data.get('explore_tabs')[0]['pagination_metadata']['has_next_page']
+        
 
-        #print("****** homes_sections****")
-        #print(homes_sections)
-        #home_section = homes_sections['listings']
-        #print("****** homes_section ****")
-        #print(home_section)
+        # listings = self.get_listings(data)
+        # print('__________-------------_______________________')
+        # #print(listings)
+        # print('__________-------------_______________________')
+
+        # #listings = data.get('explore_tabs')[0].get('sections')[1].get('listings')
+        # #logging.log(logging.DEBUG, '"******LISTINGS***"' + listings)
+
+        # BASE_URL = 'https://www.airbnb.com/rooms/'
 
 
-        #homes = data.get('explore_tabs')[0].get('sections')[3].get('listings')
-
-        #BASE_URL = "airbnb.ca"
 
 
-        last_page_number = self.last_page_in_search(response)
-        print("***********************************")
-        print("Seuraavassa sivunumero: ")
-        print(last_page_number)
+        # # last_page_number = self.last_pagenumer_in_search(response)
+        # # print("-----------------------")
+        # # print("last_page_number: ", last_page_number)
+        # # print("-----------------------")
+        # has_next_page = True
+
+        
+
+
+        # #### OFFSETIN HAKEMINEN ONNISTUU NÄIN
+        # # Vinkki tähän saatu täältä: https://gist.github.com/prehensile/aed87c98677da07c8f042cd019a04ebf0
+        # offset = data.get('explore_tabs')[0]['pagination_metadata']['items_offset']
+        # print("******OFFSET***")
+        # print(offset)
+
+        # # Ei osaa vielä hakea Listingssejä
+        # # https://gist.github.com/prehensile/aed87c98677da07c8f042cd01904ebf0/380524e7cb9f7f9e91548b8cbf2b1b3cf77c7f50#file-airbnb-search-py-L28
+        # #page_data = get_bootstrap_data_for_hypernova_key( buf, "spaspabundlejs" )
+        # #section = page_data["bootstrapData"]["reduxData"]["exploreTab"]["response"]["explore_tabs"][0]["sections"][0]
+        # #listings = section["listings"]
+        # #items_offset = page_data["bootstrapData"]["reduxData"]["exploreTab"]["response"]["explore_tabs"][0]["pagination_metadata"]["items_offset"]
+
+        # homes_sections = data.get('explore_tabs')[0]['sections'][0]
+
+
+        # #### LISTINGSEIHIN PÄÄSEE KÄSIKSI NÄIN:
+        # #homes = data.get('explore_tabs')[0].get('sections')[2].get('listings')
+
+        # #print("****** homes_sections****")
+        # #print(homes_sections)
+        # #home_section = homes_sections['listings']
+        # #print("****** homes_section ****")
+        # #print(home_section)
+
+
+        # #homes = data.get('explore_tabs')[0].get('sections')[3].get('listings')
+
+        # #BASE_URL = "airbnb.ca"
+
+
+        # last_page_number = self.last_page_in_search(response)
+        # print("***********************************")
+        # print("Seuraavassa sivunumero: ")
+        # print(last_page_number)
 
         _file_ = "first_page_nyt.json"
         with open(_file_, 'wb') as f:
@@ -255,18 +337,22 @@ class AirbnbSpiderSpider(scrapy.Spider):
     
     def parse_listing_contents(self, response):
         print("************LISTING CONTENTS")
+        #print(response.text)
+        response = response.text
         #data = self.read_data(response)
         #print(data)
-        #data = json.loads(data.body)
+        #data = json.loads(response.text)
+        #print(data)
         #listing_page =  json.loads(response.body)
         #listing_page = self.get_listing_page(listing_id)
         #print(listing_page)
         #listing_data = json.loads(listing_page.body)
-        data = json.loads(response.body)
-        print(data)
+        #data = json.loads(response)
+
+        #print(data)
 
 
-        pdp = data.get('listing_detail')
+        pdp = response.get('listing_detail')
         additional_house_rules = pdp.get('additional_house_rules')
 
 
@@ -288,81 +374,84 @@ class AirbnbSpiderSpider(scrapy.Spider):
 
 
     def parse_listing(self, listing, pricing_quote, verified):
+        item = AirbnbItem()
+
+        item['id'] = listing.get('id')
+        item['name'] = listing.get('name')
+        item['is_business_travel_ready'] = listing.get('is_business_travel_ready')
+        item['is_new_listing'] = listing.get('is_new_listing')
+        item['is_super_host'] = listing.get('is_superhost')
+
+        item['kicker_content_message'] = listing.get('kicker_content').get('messages')[0]
 
 
+        item['latitude'] = listing.get('lat')
+        item['longitude'] = listing.get('lng')
+        item['localized_city'] = listing.get('localized_city')
+        item['localized_neighborhood'] = listing.get('localized_neighborhood')
+        item['neighborhood'] = listing.get('neighborhood')
 
-        id = listing.get('id')
-        name = listing.get('name')
-        is_business_travel_ready = listing.get('is_business_travel_ready')
-        is_new_listing = listing.get('is_new_listing')
-        is_super_host = listing.get('is_superhost')
-
-        kicker_content_message = listing.get('kicker_content').get('messages')[0]
-
-
-        latitude = listing.get('lat')
-        longitude = listing.get('lng')
-        localized_city = listing.get('localized_city')
-        localized_neighborhood = listing.get('localized_neighborhood')
-        neighborhood = listing.get('neighborhood')
-
-        person_capacity = listing.get('person_capacity')
-        picture_count = listing.get('picture_count')
-        preview_amenities = listing.get('preview_amenities')
-        property_type_id = listing.get('property_type_id')
-        reviews_count = listing.get('reviews_count')
-        room_and_property_type = listing.get('room_and_property_type')
-        room_type_category = listing.get('room_type_category')
-        room_type = listing.get('room_type')
-        space_type = listing.get('space_type')
-        star_rating = listing.get('star_rating')
-        avg_rating = listing.get('avg_rating')
-        min_nights = listing.get('min_nights')
-        max_nights = listing.get('max_nights')
-        cancel_policy = listing.get('cancel_policy')
+        item['person_capacity'] = listing.get('person_capacity')
+        item['picture_count'] = listing.get('picture_count')
+        item['preview_amenities'] = listing.get('preview_amenities')
+        item['property_type_id'] = listing.get('property_type_id')
+        item['reviews_count'] = listing.get('reviews_count')
+        item['room_and_property_type'] = listing.get('room_and_property_type')
+        item['room_type_category'] = listing.get('room_type_category')
+        item['room_type'] = listing.get('room_type')
+        item['space_type'] = listing.get('space_type')
+        item['star_rating'] = listing.get('star_rating')
+        item['avg_rating'] = listing.get('avg_rating')
+        item['min_nights'] = listing.get('min_nights')
+        item['max_nights'] = listing.get('max_nights')
+        item['cancel_policy'] = listing.get('cancel_policy')
 
         # Pricing quote -osuuden hakeminen
-        can_instant_book = pricing_quote.get('can_instant_book')
-        monthly_price_factor = pricing_quote.get('monthly_price_factor')
-        price_string = pricing_quote.get('price_string')
-        rate_type = pricing_quote.get('rate_type')
-        weekly_price_factor = pricing_quote.get('weekly_price_factor')
+        item['can_instant_book'] = pricing_quote.get('can_instant_book')
+        item['monthly_price_factor'] = pricing_quote.get('monthly_price_factor')
+        item['price_string'] = pricing_quote.get('price_string')
+        item['rate_type'] = pricing_quote.get('rate_type')
+        item['weekly_price_factor'] = pricing_quote.get('weekly_price_factor')
         #can_instant_book = listing.get('pricing_quote').get('can_instant_book')
 
 
-        host_verified = verified.get('enabled')
+        item['host_verified'] = verified.get('enabled')
         #self.parse_listing_contents(id)
-        bedrooms = listing.get('bedrooms')
-        bedroom_label = listing.get('bedroom_label')
-        beds = listing.get('beds')
-        bathrooms2 = listing.get('bathrooms')
-        city = listing.get('city')
+        item['bedrooms'] = listing.get('bedrooms')
+        item['bedroom_label'] = listing.get('bedroom_label')
+        item['beds'] = listing.get('beds')
+        item['bathrooms'] = listing.get('bathrooms')
+        item['city'] = listing.get('city')
 
         #item = 
 
 
-        listing_url = self.get_listing_url(id)
-        yield scrapy.Request(listing_url, callback=self.parse_listing_contents)
+        item['listing_url'] = self.get_listing_url(id)
+        #yield scrapy.Request(listing_url, callback=self.parse_listing_contents)
 
         #listing_url = self.get_listing_url(id)
 
-        print("********** id: ", id)
-        print('********* Name: ', name)
-        print("********* is business travel ready: ", is_business_travel_ready)
-        print("********* new? ", is_new_listing)
-        print("********* is_super_host: ", is_super_host)
-        print("********* kicker: ", kicker_content_message)
-        print("*********bedrooms: ", bedrooms)
-        print("********* bedroom_label: ", bedroom_label)
-        print("********* beds: ", beds)
-        print("*********BATHROOMS2 METODISTA:", bathrooms2)
-        print("********* city: ", city)
-        print("********* can_instant_book: ", can_instant_book)
-        print("********* monthly: ", monthly_price_factor)
-        print('********* pricing_string: ', price_string)
-        print("********* rate_type: ", rate_type)
-        print("********* weekly: ", weekly_price_factor)
-        print("********* host verified: ", host_verified)
+        # print("********** id: ", id)
+        # print('********* Name: ', name)
+        # print("********* is business travel ready: ", is_business_travel_ready)
+        # print("********* new? ", is_new_listing)
+        # print("********* is_super_host: ", is_super_host)
+        # print("********* kicker: ", kicker_content_message)
+        # print("*********bedrooms: ", bedrooms)
+        # print("********* bedroom_label: ", bedroom_label)
+        # print("********* beds: ", beds)
+        # print("*********BATHROOMS2 METODISTA:", bathrooms2)
+        # print("********* city: ", city)
+        # print("********* can_instant_book: ", can_instant_book)
+        # print("********* monthly: ", monthly_price_factor)
+        # print('********* pricing_string: ', price_string)
+        # print("********* rate_type: ", rate_type)
+        # print("********* weekly: ", weekly_price_factor)
+        # print("********* host verified: ", host_verified)
+        #print(item)
+        yield (item)
+        #yield {'id': id}
+
         
 
     #def parse_listing_results_page(self, response):

@@ -56,9 +56,10 @@ class AirbnbItem(scrapy.Item):
     beds = scrapy.Field()
     bathrooms = scrapy.Field()
     city = scrapy.Field()
+    listing_url = scrapy.Field()
     
-
     pass
+
 
 
 class CompleteAirbnbItem(scrapy.Item):
